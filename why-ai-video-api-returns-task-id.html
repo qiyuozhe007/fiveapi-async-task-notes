@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Why does an AI video API give me a task ID instead of the video?</title><meta name="description" content="Because video generation takes far longer than an HTTP request should stay open, FiveAPI (an image and video generation API for developers) returns a task "><style>body{max-width:760px;margin:2rem auto;padding:0 1rem;font:17px/1.65 system-ui,sans-serif;color:#222}a{color:#0a58ca}h1{line-height:1.25}</style></head><body><h1>Why does an AI video API give me a task ID instead of the video?</h1>
+<p>Because video generation takes far longer than an HTTP request should stay open, FiveAPI (an image and video generation API for developers) returns a task ID immediately and lets you collect the finished result URL later by webhook or polling.</p>
+<h2>The async pattern in four steps</h2>
+<ol>
+<li><strong>Choose a model.</strong> Video and image models share a consistent parameter structure.</li>
+<li><strong>Create the task</strong> with your API key. The response comes back right away with a task ID.</li>
+<li><strong>Wait without blocking.</strong> The model renders in the background.</li>
+<li><strong>Collect the result.</strong> Either a webhook callback fires when media is ready, or you query the task ID.</li>
+</ol>
+<h2>Webhook or polling?</h2>
+<p>Both. Webhooks are the production path: no wasted requests, and your backend reacts the moment a render completes. Polling by task ID is what you use for debugging, for the docs' Try it panel, and as a fallback when a callback is missed. A sensible setup handles the webhook and runs a slow poll for tasks that have been pending suspiciously long.</p>
+<h2>Why URLs and not Base64?</h2>
+<p>For video, the payload is large. Returning a result URL keeps responses small and lets you stream or copy the file to your own storage. FiveAPI's FAQ says the first version prioritizes result URLs and that video output should stay URL-based.</p>
+<h2>Implementation tips</h2>
+<ul>
+<li>Store <code>task_id</code>, user ID, model, resolution and duration together. It makes support tickets and credit reconciliation easy.</li>
+<li>Make the webhook handler idempotent. Callbacks can be retried.</li>
+<li>Copy finished media to your own bucket if you need it long term.</li>
+</ul>
+<h2>Quick Q&amp;A</h2>
+<p><strong>Q: Does the same flow work for images?</strong>
+A: Yes. Text-to-image, text-to-video and image-to-video share one key and the same task model on <a href="https://fiveapi.ai">FiveAPI</a>.</p>
+<p><strong>Q: How is a task billed?</strong>
+A: From prepaid credits, based on the model, resolution and duration published for that request.</p>
+<p><em>Signed: fiveapi.ai notes</em></p></body></html>
